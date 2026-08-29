@@ -22,4 +22,8 @@ async function registerSW() {
 	}
 
 	await navigator.serviceWorker.register(stockSW);
+
+	// A registration can resolve before its worker is active. Wait for activation
+	// so the newly created Scramjet frame is controlled from its first request.
+	await navigator.serviceWorker.ready;
 }

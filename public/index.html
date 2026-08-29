@@ -2,65 +2,41 @@
 <html>
 	<head>
 		<meta charset="utf-8" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
-		/>
-		<title>Scramjet</title>
-
-		<link rel="shortcut icon" content="favicon.webp" />
-	
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Scramjet Plus</title>
 		<script src="/scram/scramjet.all.js"></script>
 		<script src="/baremux/index.js"></script>
-		
 		<link rel="stylesheet" href="index.css" />
 		<script src="register-sw.js" defer></script>
 		<script src="search.js" defer></script>
 		<script src="index.js" defer></script>
 	</head>
-
 	<body>
-		<div title="Scramjet Logo" class="flex-center logo-wrapper header-center">
-			<img class="logo" src="sj.png" alt="Scramjet" />
-			<h1>Scramjet | MW</h1>
+		<div class="shell">
+			<aside class="sidebar">
+				<a class="brand" href="/">Scramjet <span>Plus</span></a>
+				<nav class="side-nav">
+					<button data-view="home" class="active">Home</button>
+					<button data-view="bookmarks">Bookmarks</button>
+					<button data-view="history">History</button>
+					<button data-view="downloads">Downloads</button>
+				</nav>
+				<div class="sidebar-bottom"><a href="/settings">⚙ Settings</a><a href="/admin">Admin</a></div>
+			</aside>
+			<main class="workspace">
+				<header class="toolbar"><select id="profile-picker" aria-label="Profile"></select><button id="add-profile" class="quiet">＋ Profile</button><button id="command" class="command">⌘K</button></header>
+				<section id="home" class="view active">
+					<p class="eyebrow">Your private workspace</p><h1>Scramjet Plus</h1><p class="intro">Browse, save, and return to what matters.</p>
+					<form id="sj-form"><input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" /><input id="sj-address" placeholder="Search or enter an address" autocomplete="off" /><button>Go</button></form>
+					<div class="widgets"><article><span>Usage</span><strong id="usage">Loading…</strong><small id="expiry"></small></article><article><span>Recent</span><div id="recent"></div></article><article><span>Quick links</span><div id="quick-links"></div></article></div>
+					<p id="sj-error"></p><pre id="sj-error-code"></pre>
+				</section>
+				<section id="bookmarks" class="view"><h2>Bookmarks</h2><div id="bookmark-list" class="list"></div></section>
+				<section id="history" class="view"><h2>History</h2><div id="history-list" class="list"></div></section>
+				<section id="downloads" class="view"><h2>Downloads</h2><p class="muted">Downloads detected while browsing appear here for this profile.</p><div id="download-list" class="list"></div></section>
+				<div id="frame-host"></div>
+			</main>
 		</div>
-		<div class="flex-center desc left-margin">
-			<p>
-				Scramjet is an experimental interception based web proxy designed to
-				evade internet censorship, bypass arbitrary web browser restrictions and
-				innovate web proxy technologies.
-			</p>
-		</div>
-
-		<form id="sj-form" class="flex-center">
-			<input
-				id="sj-search-engine"
-				value="https://www.google.com/search?q=%s"
-				type="hidden"
-			/>
-			<input id="sj-address" type="text" placeholder="Search the web freely" />
-		</form>
-		<div class="desc left-margin">
-			<p id="sj-error"></p>
-			<pre id="sj-error-code"></pre>
-		</div>
-		<footer>
-			<div>
-				<a
-					title="The Mercury Workshop GitHub organization"
-					href="https://github.com/MercuryWorkshop"
-					>Mercury Workshop</a
-				>
-				<a
-					title="The example demo app for Scramjet"
-					href="https://github.com/MercuryWorkshop/Scramjet-Demo"
-					>GitHub</a
-				>
-				<a title="License information" href="credits.html">Credits</a>
-			</div>
-			<div>
-				<span>Scramjet &copy; MW 2025</span>
-			</div>
-		</footer>
+		<dialog id="palette"><input id="palette-input" placeholder="Search bookmarks, history, commands…" autofocus /><div id="palette-results"></div></dialog>
 	</body>
 </html>
