@@ -1,4 +1,7 @@
 .dockerignore
+.env
+.env.*
+data/
 Dockerfile
 .eslintignore
 .eslintrc.json

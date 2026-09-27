@@ -2,3 +2,12 @@ node_modules
 .DS_Store
 scramjet/
 data/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.pfx
+*.p12
+secrets/

@@ -2,17 +2,21 @@ const settingsForm = document.getElementById("settings-form");
 const settingsError = document.getElementById("error");
 
 function showTab(name) {
-	document.querySelectorAll(".tab").forEach((tab) =>
-		tab.classList.toggle("active", tab.dataset.tab === name),
-	);
-	document.querySelectorAll(".tab-panel").forEach((panel) =>
-		panel.classList.toggle("active", panel.id === `${name}-panel`),
-	);
+	document
+		.querySelectorAll(".tab")
+		.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === name));
+	document
+		.querySelectorAll(".tab-panel")
+		.forEach((panel) =>
+			panel.classList.toggle("active", panel.id === `${name}-panel`)
+		);
 }
 
-document.querySelectorAll(".tab").forEach((tab) =>
-	tab.addEventListener("click", () => showTab(tab.dataset.tab)),
-);
+document
+	.querySelectorAll(".tab")
+	.forEach((tab) =>
+		tab.addEventListener("click", () => showTab(tab.dataset.tab))
+	);
 
 fetch("/api/account/settings")
 	.then((response) => response.json())

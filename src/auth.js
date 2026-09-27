@@ -1,25 +1,40 @@
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
+import {
+	randomBytes,
+	scrypt as scryptCallback,
+	timingSafeEqual,
+} from "node:crypto";
 import { chmod, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
 const scrypt = promisify(scryptCallback);
-const dataFile = process.env.AUTH_DATA_FILE ||
+const dataFile =
+	process.env.AUTH_DATA_FILE ||
 	fileURLToPath(new URL("../data/users.json", import.meta.url));
 const sessionLifetimeMs = 1000 * 60 * 60 * 12;
 const themes = new Set(["midnight", "violet", "light"]);
+const secureCookies =
+	process.env.COOKIE_SECURE === undefined
+		? process.env.NODE_ENV === "production"
+		: process.env.COOKIE_SECURE === "true";
 
 let users = [];
 let writeQueue = Promise.resolve();
 const sessions = new Map();
 
 function validateUsername(username) {
-	return typeof username === "string" && /^[a-zA-Z0-9_.-]{3,64}$/.test(username);
+	return (
+		typeof username === "string" && /^[a-zA-Z0-9_.-]{3,64}$/.test(username)
+	);
 }
 
 function validatePassword(password) {
-	return typeof password === "string" && password.length >= 8 && password.length <= 128;
+	return (
+		typeof password === "string" &&
+		password.length >= 8 &&
+		password.length <= 128
+	);
 }
 
 function normalizeUsername(username) {
@@ -64,14 +79,20 @@ function settingsFor({ accessHours, requestLimit } = {}) {
 	if (accessHours !== undefined && accessHours !== "") {
 		const hours = Number(accessHours);
 		if (!Number.isInteger(hours) || hours < 1 || hours > 8760)
-			throw new Error("Access duration must be a whole number between 1 and 8760 hours.");
-		accessExpiresAt = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+			throw new Error(
+				"Access duration must be a whole number between 1 and 8760 hours."
+			);
+		accessExpiresAt = new Date(
+			Date.now() + hours * 60 * 60 * 1000
+		).toISOString();
 	}
 
 	if (requestLimit !== undefined && requestLimit !== "") {
 		const limit = Number(requestLimit);
 		if (!Number.isInteger(limit) || limit < 1 || limit > 1000000)
-			throw new Error("Request limit must be a whole number between 1 and 1,000,000.");
+			throw new Error(
+				"Request limit must be a whole number between 1 and 1,000,000."
+			);
 		normalizedRequestLimit = limit;
 	}
 
@@ -94,9 +115,17 @@ async function persist(task) {
 	return result;
 }
 
-async function createUser(username, password, role, settings, initialSetup = false) {
+async function createUser(
+	username,
+	password,
+	role,
+	settings,
+	initialSetup = false
+) {
 	if (!validateUsername(username))
-		throw new Error("Username must be 3–64 characters: letters, numbers, ., _, or -.");
+		throw new Error(
+			"Username must be 3–64 characters: letters, numbers, ., _, or -."
+		);
 	if (!validatePassword(password))
 		throw new Error("Password must be between 8 and 128 characters.");
 
@@ -134,9 +163,15 @@ function publicUser(user) {
 		role: user.role,
 		createdAt: user.createdAt,
 		accessExpiresAt: user.accessExpiresAt || null,
-		requestLimit: Number.isInteger(user.requestLimit) ? user.requestLimit : null,
+		requestLimit: Number.isInteger(user.requestLimit)
+			? user.requestLimit
+			: null,
 		requestsUsed: Number.isInteger(user.requestsUsed) ? user.requestsUsed : 0,
-		settings: { theme: themes.has(user.settings?.theme) ? user.settings.theme : "midnight" },
+		settings: {
+			theme: themes.has(user.settings?.theme)
+				? user.settings.theme
+				: "midnight",
+		},
 	};
 }
 
@@ -149,7 +184,7 @@ export async function loadUsers() {
 				typeof user?.username === "string" &&
 				typeof user?.passwordHash === "string" &&
 				typeof user?.salt === "string" &&
-				["admin", "user"].includes(user?.role),
+				["admin", "user"].includes(user?.role)
 		);
 	} catch (error) {
 		if (error.code !== "ENOENT") throw error;
@@ -162,7 +197,8 @@ export function isConfigured() {
 }
 
 export async function createInitialAdmin(username, password) {
-	if (isConfigured()) throw new Error("Initial setup has already been completed.");
+	if (isConfigured())
+		throw new Error("Initial setup has already been completed.");
 	return createUser(username, password, "admin", undefined, true);
 }
 
@@ -173,7 +209,9 @@ export async function addUser(username, password, settings) {
 
 export async function authenticate(username, password) {
 	if (typeof username !== "string" || typeof password !== "string") return null;
-	const user = users.find((candidate) => candidate.username === normalizeUsername(username));
+	const user = users.find(
+		(candidate) => candidate.username === normalizeUsername(username)
+	);
 	if (!user) return null;
 
 	const suppliedHash = Buffer.from(await scrypt(password, user.salt, 64));
@@ -196,19 +234,25 @@ export async function updateUser(username, updates, actorUsername) {
 		const user = users.find((candidate) => candidate.username === username);
 		if (!user) throw new Error("User not found.");
 		const nextRole = updates.role || user.role;
-		if (!["admin", "user"].includes(nextRole)) throw new Error("Invalid account role.");
-		const adminCount = users.filter((candidate) => candidate.role === "admin").length;
+		if (!["admin", "user"].includes(nextRole))
+			throw new Error("Invalid account role.");
+		const adminCount = users.filter(
+			(candidate) => candidate.role === "admin"
+		).length;
 		if (user.username === actorUsername && nextRole !== "admin")
 			throw new Error("You cannot remove your own administrator access.");
 		if (user.role === "admin" && nextRole !== "admin" && adminCount <= 1)
 			throw new Error("At least one administrator must remain.");
 
 		if (updates.requestLimit !== undefined) {
-			if (updates.requestLimit === "" || updates.requestLimit === null) user.requestLimit = null;
+			if (updates.requestLimit === "" || updates.requestLimit === null)
+				user.requestLimit = null;
 			else {
 				const limit = Number(updates.requestLimit);
 				if (!Number.isInteger(limit) || limit < 1 || limit > 1000000)
-					throw new Error("Request limit must be a whole number between 1 and 1,000,000.");
+					throw new Error(
+						"Request limit must be a whole number between 1 and 1,000,000."
+					);
 				user.requestLimit = limit;
 			}
 		}
@@ -227,7 +271,9 @@ export async function updateUser(username, updates, actorUsername) {
 			if (!validatePassword(updates.password))
 				throw new Error("Password must be between 8 and 128 characters.");
 			user.salt = randomBytes(16).toString("base64url");
-			user.passwordHash = (await scrypt(updates.password, user.salt, 64)).toString("base64url");
+			user.passwordHash = (
+				await scrypt(updates.password, user.salt, 64)
+			).toString("base64url");
 		}
 		user.role = nextRole;
 		await saveUsers();
@@ -240,8 +286,12 @@ export async function deleteUser(username, actorUsername) {
 		const index = users.findIndex((user) => user.username === username);
 		if (index === -1) throw new Error("User not found.");
 		const user = users[index];
-		if (user.username === actorUsername) throw new Error("You cannot delete your own account.");
-		if (user.role === "admin" && users.filter((candidate) => candidate.role === "admin").length <= 1)
+		if (user.username === actorUsername)
+			throw new Error("You cannot delete your own account.");
+		if (
+			user.role === "admin" &&
+			users.filter((candidate) => candidate.role === "admin").length <= 1
+		)
 			throw new Error("At least one administrator must remain.");
 		users.splice(index, 1);
 		await saveUsers();
@@ -266,9 +316,14 @@ export function getWorkspace(username) {
 }
 
 export async function saveWorkspace(username, workspace) {
-	if (!workspace || !Array.isArray(workspace.profiles) || workspace.profiles.length < 1)
+	if (
+		!workspace ||
+		!Array.isArray(workspace.profiles) ||
+		workspace.profiles.length < 1
+	)
 		throw new Error("Invalid workspace.");
-	if (workspace.profiles.length > 12) throw new Error("A workspace can have up to 12 profiles.");
+	if (workspace.profiles.length > 12)
+		throw new Error("A workspace can have up to 12 profiles.");
 	return persist(async () => {
 		const user = users.find((candidate) => candidate.username === username);
 		if (!user) throw new Error("User not found.");
@@ -292,16 +347,20 @@ export function usageFor(username) {
 
 export function getApplicationData(username, profileId, site) {
 	const user = users.find((candidate) => candidate.username === username);
-	const profile = user && workspaceFor(user).profiles.find((item) => item.id === profileId);
+	const profile =
+		user && workspaceFor(user).profiles.find((item) => item.id === profileId);
 	return profile?.siteData?.[site] || null;
 }
 
 export async function saveApplicationData(username, profileId, site, data) {
-	if (typeof site !== "string" || site.length > 300) throw new Error("Invalid site key.");
-	if (JSON.stringify(data).length > 250000) throw new Error("Application data is too large.");
+	if (typeof site !== "string" || site.length > 300)
+		throw new Error("Invalid site key.");
+	if (JSON.stringify(data).length > 250000)
+		throw new Error("Application data is too large.");
 	return persist(async () => {
 		const user = users.find((candidate) => candidate.username === username);
-		const profile = user && workspaceFor(user).profiles.find((item) => item.id === profileId);
+		const profile =
+			user && workspaceFor(user).profiles.find((item) => item.id === profileId);
 		if (!profile) throw new Error("Profile not found.");
 		profile.siteData[site] = structuredClone(data);
 		await saveUsers();
@@ -324,7 +383,10 @@ export async function consumeProxyRequest(username, countRequest = true) {
 
 		const account = publicUser(user);
 		if (!canUseService(account))
-			return { allowed: false, error: "Your proxy access limit has been reached." };
+			return {
+				allowed: false,
+				error: "Your proxy access limit has been reached.",
+			};
 
 		if (!countRequest)
 			return {
@@ -366,7 +428,9 @@ export function sessionFromCookie(cookieHeader = "") {
 		sessions.delete(token);
 		return null;
 	}
-	const user = users.find((candidate) => candidate.username === session.user.username);
+	const user = users.find(
+		(candidate) => candidate.username === session.user.username
+	);
 	if (!user) {
 		sessions.delete(token);
 		return null;
@@ -381,9 +445,9 @@ export function destroySession(cookieHeader) {
 }
 
 export function sessionCookie(session) {
-	return `sj_session=${session.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${Math.floor(sessionLifetimeMs / 1000)}`;
+	return `sj_session=${session.token}; Path=/; HttpOnly; SameSite=Lax${secureCookies ? "; Secure" : ""}; Max-Age=${Math.floor(sessionLifetimeMs / 1000)}`;
 }
 
 export function expiredSessionCookie() {
-	return "sj_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0";
+	return `sj_session=; Path=/; HttpOnly; SameSite=Lax${secureCookies ? "; Secure" : ""}; Max-Age=0`;
 }

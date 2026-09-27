@@ -5,7 +5,7 @@
 	"type": "module",
 	"engines": {
 		"npm": ">=7.0.0",
-		"node": ">=16.0.0"
+		"node": ">=20.0.0"
 	},
 	"scripts": {
 		"start": "node src/index.js",
@@ -19,13 +19,13 @@
 	"author": "Mercury Workshop",
 	"license": "GNU AFFERO",
 	"dependencies": {
-		"fastify": "^5.7.4",
-		"@fastify/static": "^9.0.0",
+		"@fastify/static": "^10.1.5",
 		"@mercuryworkshop/bare-mux": "^2.1.9",
 		"@mercuryworkshop/libcurl-transport": "^1.5.2",
 		"@mercuryworkshop/scramjet": "https://github.com/MercuryWorkshop/scramjet/releases/download/v1.1.0/mercuryworkshop-scramjet-1.1.0.tgz",
 		"@mercuryworkshop/wisp-js": "^0.4.1",
-		"ws": "^8.18.3"
+		"fastify": "^5.12.5",
+		"ws": "^8.22.0"
 	},
 	"devDependencies": {
 		"eslint": "^9.13.0",

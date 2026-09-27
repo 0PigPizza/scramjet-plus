@@ -2,17 +2,21 @@ const error = document.getElementById("error");
 const userList = document.getElementById("user-list");
 
 function showTab(name) {
-	document.querySelectorAll(".tab").forEach((tab) =>
-		tab.classList.toggle("active", tab.dataset.tab === name),
-	);
-	document.querySelectorAll(".tab-panel").forEach((panel) =>
-		panel.classList.toggle("active", panel.id === `${name}-panel`),
-	);
+	document
+		.querySelectorAll(".tab")
+		.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === name));
+	document
+		.querySelectorAll(".tab-panel")
+		.forEach((panel) =>
+			panel.classList.toggle("active", panel.id === `${name}-panel`)
+		);
 }
 
-document.querySelectorAll(".tab").forEach((tab) =>
-	tab.addEventListener("click", () => showTab(tab.dataset.tab)),
-);
+document
+	.querySelectorAll(".tab")
+	.forEach((tab) =>
+		tab.addEventListener("click", () => showTab(tab.dataset.tab))
+	);
 
 async function loadUsers() {
 	const response = await fetch("/api/admin/users");
@@ -25,9 +29,10 @@ async function loadUsers() {
 			name.textContent = user.username;
 			const details = document.createElement("span");
 			details.className = "account-meta";
-			const requests = user.requestLimit === null
-				? `${user.requestsUsed} requests used`
-				: `${user.requestsUsed} / ${user.requestLimit} requests`;
+			const requests =
+				user.requestLimit === null
+					? `${user.requestsUsed} requests used`
+					: `${user.requestsUsed} / ${user.requestLimit} requests`;
 			const expires = user.accessExpiresAt
 				? `expires ${new Date(user.accessExpiresAt).toLocaleString()}`
 				: "no expiry";
@@ -45,25 +50,31 @@ async function loadUsers() {
 			actions.append(edit, remove);
 			item.append(name, details, actions);
 			return item;
-		}),
+		})
 	);
 }
 
 async function editUser(user) {
 	const role = prompt("Role: user or admin", user.role);
 	if (role === null) return;
-	const requestLimit = prompt("Request limit (leave blank for unlimited)", user.requestLimit ?? "");
+	const requestLimit = prompt(
+		"Request limit (leave blank for unlimited)",
+		user.requestLimit ?? ""
+	);
 	if (requestLimit === null) return;
 	const accessExpiresAt = prompt(
 		"Expiry (ISO date/time; leave blank for no expiry)",
-		user.accessExpiresAt || "",
+		user.accessExpiresAt || ""
 	);
 	if (accessExpiresAt === null) return;
-	const response = await fetch(`/api/admin/users/${encodeURIComponent(user.username)}`, {
-		method: "PATCH",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify({ role, requestLimit, accessExpiresAt }),
-	});
+	const response = await fetch(
+		`/api/admin/users/${encodeURIComponent(user.username)}`,
+		{
+			method: "PATCH",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify({ role, requestLimit, accessExpiresAt }),
+		}
+	);
 	const result = await response.json();
 	if (!response.ok) {
 		error.textContent = result.error || "Unable to update user.";
@@ -74,9 +85,12 @@ async function editUser(user) {
 
 async function deleteUser(user) {
 	if (!confirm(`Delete ${user.username}? This cannot be undone.`)) return;
-	const response = await fetch(`/api/admin/users/${encodeURIComponent(user.username)}`, {
-		method: "DELETE",
-	});
+	const response = await fetch(
+		`/api/admin/users/${encodeURIComponent(user.username)}`,
+		{
+			method: "DELETE",
+		}
+	);
 	const result = await response.json();
 	if (!response.ok) {
 		error.textContent = result.error || "Unable to delete user.";
@@ -85,23 +99,25 @@ async function deleteUser(user) {
 	await loadUsers();
 }
 
-document.getElementById("add-user").addEventListener("submit", async (event) => {
-	event.preventDefault();
-	error.textContent = "";
-	const form = event.currentTarget;
-	const response = await fetch("/api/admin/users", {
-		method: "POST",
-		headers: { "content-type": "application/json" },
-		body: JSON.stringify(Object.fromEntries(new FormData(form))),
+document
+	.getElementById("add-user")
+	.addEventListener("submit", async (event) => {
+		event.preventDefault();
+		error.textContent = "";
+		const form = event.currentTarget;
+		const response = await fetch("/api/admin/users", {
+			method: "POST",
+			headers: { "content-type": "application/json" },
+			body: JSON.stringify(Object.fromEntries(new FormData(form))),
+		});
+		const result = await response.json();
+		if (!response.ok) {
+			error.textContent = result.error || "Unable to add user.";
+			return;
+		}
+		form.reset();
+		await loadUsers();
 	});
-	const result = await response.json();
-	if (!response.ok) {
-		error.textContent = result.error || "Unable to add user.";
-		return;
-	}
-	form.reset();
-	await loadUsers();
-});
 
 document.getElementById("logout").addEventListener("click", async () => {
 	await fetch("/api/auth/logout", { method: "POST" });

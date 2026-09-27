@@ -1,74 +1,75 @@
-<p align="center"><img src="https://raw.githubusercontent.com/MercuryWorkshop/scramjet/main/assets/scramjet.png" height="200"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/MercuryWorkshop/scramjet/main/assets/scramjet.png" height="200" alt="Scramjet"></p>
 
-<h1 align="center">Scramjet Demo</h1>
+<h1 align="center">Scramjet Plus</h1>
 
-The demo implementation of <a href="https://github.com/MercuryWorkshop/scramjet">Scramjet</a>, the most advanced web proxy.
+Scramjet Plus is a self-hosted, authenticated web-proxy application built with [Scramjet](https://github.com/MercuryWorkshop/scramjet), Fastify, and Wisp. It adds local account administration, usage limits, individual workspaces, and a persistent data store to the Scramjet demo application.
 
-<a href="https://github.com/MercuryWorkshop/scramjet">Scramjet</a> is an experimental interception based web proxy designed with security, developer friendliness, and performance in mind. This project is made to evade internet censorship and bypass arbitrary web browser restrictions.
+## Features
 
-#### Refer to <a href="https://github.com/HeyPuter/browser.js">browser.js</a> where this project will now receive updates outside of just bypassing internet censorship.
+- First-run administrator setup and account management
+- Per-account request limits and expiry dates
+- Persistent account, workspace, bookmark, history, and application data
+- WebSocket support through `/wisp/`
+- Health endpoint at `/healthz`
+- Docker image that runs as an unprivileged user with a persistent volume
 
-## Supported Sites
+## Requirements
 
-Scramjet has CAPTCHA support! Some of the popular websites that Scramjet supports include:
+- Node.js 20 or newer
+- pnpm 10 or newer
+- Docker Engine and Docker Compose (recommended for deployment)
 
-- [Google](https://google.com)
-- [Twitter](https://twitter.com)
-- [Instagram](https://instagram.com)
-- [Youtube](https://youtube.com)
-- [Spotify](https://spotify.com)
-- [Discord](https://discord.com)
-- [Reddit](https://reddit.com)
-- [GeForce NOW](https://play.geforcenow.com/)
+## Local development
 
-Ensure you are not hosting on a datacenter IP for CAPTCHAs to work reliably along with YouTube. Heavy amounts of traffic will make some sites NOT work on a single IP. Consider rotating IPs or routing through Wireguard using a project like <a href="https://github.com/whyvl/wireproxy">wireproxy</a>.
-
-## Setup / Usage
-
-You will need Node.js 16.x (and above) and Git installed; below is an example for Debian/Ubuntu setup.
-
-```
-sudo apt update
-sudo apt upgrade
-sudo apt install curl git nginx
-
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-nvm install 20
-nvm use 20
-
-git clone https://github.com/MercuryWorkshop/Scramjet-App
-cd Scramjet-App
-```
-
-Install dependencies
-
-```
-pnpm install
-```
-
-Run the server
-
-```
+```sh
+pnpm install --frozen-lockfile
 pnpm start
 ```
 
-Resources for self-hosting:
+Open `http://127.0.0.1:8080/admin/setup` to create the initial administrator. The default data location is `data/users.json`; it is intentionally ignored by Git.
 
-- https://github.com/nvm-sh/nvm
-- https://docs.titaniumnetwork.org/guides/nginx/
-- https://docs.titaniumnetwork.org/guides/vps-hosting/
-- https://docs.titaniumnetwork.org/guides/dns-setup/
+Useful checks:
 
-### HTTP Transport
+```sh
+pnpm lint
+pnpm exec prettier --check .
+pnpm audit --prod
+```
 
-The example uses [libcurl-transport](https://github.com/MercuryWorkshop/libcurl-transport) to fetch proxied data encrypted.
+## Docker deployment
 
-You may also want to use [epoxy-transport](https://github.com/MercuryWorkshop/epoxy-transport), a different way of fetching encrypted data.
+Start the application with:
 
-This example also now uses [wisp-js/server](https://www.npmjs.com/package/@mercuryworkshop/wisp-js) instead of the now outdated wisp-server-node. Please note that this can also be replaced with other wisp implementations like [wisp-server-python](https://github.com/MercuryWorkshop/wisp-server-python) which is highly recommended for production.
+```sh
+docker compose up -d --build
+docker compose ps
+curl http://127.0.0.1:8080/healthz
+```
 
-See the [bare-mux](https://github.com/MercuryWorkshop/bare-mux) documentation for more information.
+Compose keeps application data in the named `scramjet-data` volume. It publishes the service only on the host loopback interface (`127.0.0.1:8080`), so use a TLS-terminating reverse proxy to expose it publicly. The proxy must forward HTTP WebSocket upgrades for `/wisp/`.
+
+Set `PORT` before starting Compose to choose another local port:
+
+```sh
+PORT=8081 docker compose up -d
+```
+
+## Configuration
+
+| Variable         | Default              | Purpose                                                                                    |
+| ---------------- | -------------------- | ------------------------------------------------------------------------------------------ |
+| `PORT`           | `8080`               | HTTP listening port.                                                                       |
+| `AUTH_DATA_FILE` | `data/users.json`    | Absolute or relative location of the persistent account-data file.                         |
+| `NODE_ENV`       | unset                | Set to `production` for deployment.                                                        |
+| `COOKIE_SECURE`  | `true` in production | Marks session cookies `Secure`. Keep enabled whenever users access the site through HTTPS. |
+
+## Operations and security
+
+- Back up the `scramjet-data` Docker volume before upgrades or host migrations.
+- Keep the origin bound to loopback and expose it only through a hardened HTTPS reverse proxy.
+- Do not commit `data/`, environment files, credentials, private keys, or deployment-specific configuration.
+- Restrict access to trusted users. Operators are responsible for complying with applicable laws, upstream services’ terms, and hosting-provider policies.
+
+## License
+
+GNU Affero General Public License. See [LICENSE](LICENSE).

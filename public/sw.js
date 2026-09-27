@@ -16,14 +16,23 @@ async function handleRequest(event) {
 		if (!access.ok)
 			return new Response(
 				"<h1>Proxy access unavailable</h1><p>Your account has expired or reached its request limit.</p>",
-				{ status: 403, headers: { "content-type": "text/html; charset=utf-8" } },
+				{ status: 403, headers: { "content-type": "text/html; charset=utf-8" } }
 			);
 		const response = await scramjet.fetch(event);
 		const disposition = response.headers.get("content-disposition") || "";
 		if (disposition.toLowerCase().includes("attachment")) {
-			const name = disposition.match(/filename[^;=\n]*=(?:UTF-8''|[\"'])?([^;\n\"']*)/)?.[1] || "Download";
+			const name =
+				disposition.match(
+					/filename[^;=\n]*=(?:UTF-8''|[\"'])?([^;\n\"']*)/
+				)?.[1] || "Download";
 			const clients = await self.clients.matchAll({ type: "window" });
-			clients.forEach((client) => client.postMessage({ type: "scramjet-download", name, url: event.request.url }));
+			clients.forEach((client) =>
+				client.postMessage({
+					type: "scramjet-download",
+					name,
+					url: event.request.url,
+				})
+			);
 		}
 		return response;
 	}

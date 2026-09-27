@@ -21,22 +21,73 @@
 					<button data-view="history">History</button>
 					<button data-view="downloads">Downloads</button>
 				</nav>
-				<div class="sidebar-bottom"><a href="/settings">⚙ Settings</a><a href="/admin">Admin</a></div>
+				<div class="sidebar-bottom">
+					<a href="/settings">⚙ Settings</a><a href="/admin">Admin</a>
+				</div>
 			</aside>
 			<main class="workspace">
-				<header class="toolbar"><select id="profile-picker" aria-label="Profile"></select><button id="add-profile" class="quiet">＋ Profile</button><button id="command" class="command">⌘K</button></header>
+				<header class="toolbar">
+					<select id="profile-picker" aria-label="Profile"></select
+					><button id="add-profile" class="quiet">＋ Profile</button
+					><button id="command" class="command">⌘K</button>
+				</header>
 				<section id="home" class="view active">
-					<p class="eyebrow">Your private workspace</p><h1>Scramjet Plus</h1><p class="intro">Browse, save, and return to what matters.</p>
-					<form id="sj-form"><input id="sj-search-engine" value="https://www.google.com/search?q=%s" type="hidden" /><input id="sj-address" placeholder="Search or enter an address" autocomplete="off" /><button>Go</button></form>
-					<div class="widgets"><article><span>Usage</span><strong id="usage">Loading…</strong><small id="expiry"></small></article><article><span>Recent</span><div id="recent"></div></article><article><span>Quick links</span><div id="quick-links"></div></article></div>
-					<p id="sj-error"></p><pre id="sj-error-code"></pre>
+					<p class="eyebrow">Your private workspace</p>
+					<h1>Scramjet Plus</h1>
+					<p class="intro">Browse, save, and return to what matters.</p>
+					<form id="sj-form">
+						<input
+							id="sj-search-engine"
+							value="https://www.google.com/search?q=%s"
+							type="hidden"
+						/><input
+							id="sj-address"
+							placeholder="Search or enter an address"
+							autocomplete="off"
+						/><button>Go</button>
+					</form>
+					<div class="widgets">
+						<article>
+							<span>Usage</span><strong id="usage">Loading…</strong
+							><small id="expiry"></small>
+						</article>
+						<article>
+							<span>Recent</span>
+							<div id="recent"></div>
+						</article>
+						<article>
+							<span>Quick links</span>
+							<div id="quick-links"></div>
+						</article>
+					</div>
+					<p id="sj-error"></p>
+					<pre id="sj-error-code"></pre>
 				</section>
-				<section id="bookmarks" class="view"><h2>Bookmarks</h2><div id="bookmark-list" class="list"></div></section>
-				<section id="history" class="view"><h2>History</h2><div id="history-list" class="list"></div></section>
-				<section id="downloads" class="view"><h2>Downloads</h2><p class="muted">Downloads detected while browsing appear here for this profile.</p><div id="download-list" class="list"></div></section>
+				<section id="bookmarks" class="view">
+					<h2>Bookmarks</h2>
+					<div id="bookmark-list" class="list"></div>
+				</section>
+				<section id="history" class="view">
+					<h2>History</h2>
+					<div id="history-list" class="list"></div>
+				</section>
+				<section id="downloads" class="view">
+					<h2>Downloads</h2>
+					<p class="muted">
+						Downloads detected while browsing appear here for this profile.
+					</p>
+					<div id="download-list" class="list"></div>
+				</section>
 				<div id="frame-host"></div>
 			</main>
 		</div>
-		<dialog id="palette"><input id="palette-input" placeholder="Search bookmarks, history, commands…" autofocus /><div id="palette-results"></div></dialog>
+		<dialog id="palette">
+			<input
+				id="palette-input"
+				placeholder="Search bookmarks, history, commands…"
+				autofocus
+			/>
+			<div id="palette-results"></div>
+		</dialog>
 	</body>
 </html>
