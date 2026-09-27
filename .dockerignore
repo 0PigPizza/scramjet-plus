@@ -4,7 +4,6 @@
 .env.*
 node_modules/
 data/
-cloudflared/
 Dockerfile
 .eslintignore
 .eslintrc.json
